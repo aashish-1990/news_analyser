@@ -1,6 +1,6 @@
 import streamlit as st
 import feedparser
-import openai
+from openai import OpenAI
 import os
 
 st.set_page_config(page_title="Finance News Script Generator", layout="centered")
@@ -22,7 +22,7 @@ def fetch_finance_news():
         headlines.append(f"{entry.title} - {entry.link}")
     return headlines
 
-# --- Generate Video Script ---
+# --- Generate Video Script (with openai>=1.0.0 syntax) ---
 def create_summary(headlines, api_key):
     summary_prompt = (
         "You are an expert finance news analyst in India. "
@@ -31,14 +31,14 @@ def create_summary(headlines, api_key):
         "Structure with intro, top stories, quick explanations, and a CTA at the end:\n\n"
         + "\n".join(headlines)
     )
-    openai.api_key = api_key
-    response = openai.ChatCompletion.create(
-        model="gpt-4o",  # or "gpt-3.5-turbo" if you prefer
+    client = OpenAI(api_key=api_key)
+    response = client.chat.completions.create(
+        model="gpt-4o",  # Or "gpt-3.5-turbo"
         messages=[{"role": "user", "content": summary_prompt}],
         max_tokens=900,
         temperature=0.5,
     )
-    return response.choices[0].message['content']
+    return response.choices[0].message.content
 
 # --- App Workflow ---
 if api_key:
